@@ -20,7 +20,7 @@ class CategoryController extends Controller
         $userId = $request->get('jwt_payload')->get('sub');
 
         # Get outlet user select now
-        $outletId = Cache::get("active_outlet:user:{$userId}") ?? env('TEST_ACTIVE_OUTLET');
+        $outletId = Cache::get("active_outlet:user:{$userId}");
         
         $perPage = $request->integer('per_page', 7);
         # Get category by outlet user select

@@ -23,7 +23,6 @@ class UpdateVariantRequest extends BaseApiFormRequest
     public function rules(): array
     {
         return [
-            'sku' => 'sometimes|string|max:26|unique:product_variants,sku',
             'variant_name' => 'sometimes|string',
             'description' => 'sometimes|nullable|string',
             'harga_awal' => 'sometimes|integer|min:0',

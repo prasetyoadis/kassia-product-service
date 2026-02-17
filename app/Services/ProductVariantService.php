@@ -44,16 +44,37 @@ class ProductVariantService {
 
                 return $variantRows;
             } else {
+                /*
+                 * Jika product sebelumnya NON-variant
+                 * - Ubah product.is_variant = true
+                 * - Nonaktifkan variant pertama (default)
+                 */
                 if($product->is_variant === false){
+                    # Update product jadi variant-based
                     $product->update(['is_variant' => true]);
+                    # Nonaktifkan semua variant existing (harusnya cuma 1)
+                    ProductVariant::where('product_id', $product->id)
+                        ->where('is_active', true)
+                        ->where('variant_name', $product->name)
+                        ->update([
+                            'is_active' => false,
+                            'updated_at' => now(),
+                        ]);
                     $product->refresh();
                 };
                 
+                /*
+                 * Create Variant Baru
+                 */
                 $variantPayload = collect($payload)->except(['min_stock'])->all();
                 $variantPayload['product_id'] = $product->id;
+                $variantPayload['outlet_id'] = $outletId;
 
                 $variant = ProductVariant::create($variantPayload);
 
+                /*
+                 * Create Inventory
+                 */
                 InventoryItem::create([
                     'outlet_id' => $outletId,
                     'product_variant_id' => $variant->id,
@@ -66,7 +87,7 @@ class ProductVariantService {
                 return $variant;
             }
 
-            Log::info('kassia-product-service.ProductVariantController@store.ProductVariantService.store success', [
+            Log::info('kassia-product-service.ProductVariantController@store ProductVariantService@store success', [
                 'service' => 'ProductVariantService',
                 'action' => 'store',
                 'product_id' => $product->id,
@@ -76,7 +97,7 @@ class ProductVariantService {
         } catch (Throwable $e) {
             DB::rollBack();
 
-            Log::error('kassia-product-service.ProductVariantController@store.ProductService.store failed', [
+            Log::error('kassia-product-service.ProductVariantController@store ProductService@store failed', [
                 'service' => 'ProductService',
                 'action' => 'store',
                 'product_id' => $product->id,
@@ -108,8 +129,8 @@ class ProductVariantService {
             // }
 
             /*
-            * UPDATE Variant (exclude min_stock)
-            */
+             * UPDATE Variant (exclude min_stock)
+             */
             $variantPayload = collect($payload)->except(['min_stock'])->all();
 
             if (!empty($variantPayload)) {
@@ -124,6 +145,7 @@ class ProductVariantService {
                 InventoryItem::where('product_variant_id', $variant->id)
                     ->update([
                         'min_stock' => $payload['min_stock'],
+                        'updated_at' => now(),
                     ]);
             }
 
@@ -160,7 +182,7 @@ class ProductVariantService {
         DB::beginTransaction();
 
         try {
-            $outletId = Cache::get("active_outlet:user:{$userId}") ?? env('TEST_ACTIVE_OUTLET');
+            $outletId = Cache::get("active_outlet:user:{$userId}");
 
             if (!$outletId) {
                 throw new \RuntimeException('Active outlet not found');
@@ -188,9 +210,9 @@ class ProductVariantService {
 
             $inventory->save();
 
-            /** -------------------------
+            /*
              * LOG INVENTORY
-             * -------------------------- */
+             */
             InventoryLog::create([
                 'inventory_item_id' => $inventory->id,
                 'outlet_id' => $outletId,

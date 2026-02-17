@@ -2,12 +2,11 @@
 
 namespace App\Services;
 
-use App\Helpers\GeneralResponse;
 use App\Models\InventoryItem;
 use App\Models\Product;
 use App\Models\ProductVariant;
-use Illuminate\Http\Exceptions\HttpResponseException;
-use Illuminate\Support\Facades\Cache;
+// use Illuminate\Http\Exceptions\HttpResponseException;
+// use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -47,6 +46,7 @@ class ProductService
             if ($payload['is_variant'] === "0") {
                 $variant = ProductVariant::create([
                     'product_id' => $product->id,
+                    'outlet_id' => $product->outlet_id,
                     'sku' => $payload['sku'] ?? null,
                     'variant_name' => $product->name,
                     'description' => $product->description,
@@ -114,6 +114,7 @@ class ProductService
 
         try {
             $wasVariant = $product->is_variant;
+            $wasActive  = $product->is_active;
             /*
              * UPDATE Product
              */
@@ -154,14 +155,20 @@ class ProductService
             }
 
             /*
-             * RULE GLOBAL: product non-aktif
+             * RULE GLOBAL: 
+             * is product change to non-aktif, change all variants to non-active 
              */
             if (
                 array_key_exists('is_active', $payload)
-                && $payload['is_active'] === false
+                && $wasActive === true
+                && $product->is_active === false
             ) {
                 ProductVariant::where('product_id', $product->id)
-                    ->update(['is_active' => false]);
+                    ->where('is_active', true)
+                    ->update([
+                        'is_active' => false,
+                        'updated_at' => now(),
+                    ]);
             }
 
             DB::commit();

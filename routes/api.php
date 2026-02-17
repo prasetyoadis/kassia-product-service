@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware(['jwt.verify'])->group(function () {
     Route::prefix('categories')
-        ->middleware(['checkRole:owner,admin,cashier'])
+        ->middleware(['subs.check','checkRole:owner,admin,cashier'])
         ->group(function () {
             # View semua category
             Route::get('/', [CategoryController::class, 'index'])
@@ -21,7 +21,7 @@ Route::middleware(['jwt.verify'])->group(function () {
                 ->name('category.view');
         });
     Route::prefix('categories')
-        ->middleware(['checkRole:owner,admin'])
+        ->middleware(['subs.check', 'checkRole:owner,admin'])
         ->group(function () {
             # Create new category
             Route::post('/', [CategoryController::class, 'store'])
@@ -37,7 +37,7 @@ Route::middleware(['jwt.verify'])->group(function () {
                 ->name('category.delete');
         });
     Route::prefix('products')
-        ->middleware('checkRole:owner,admin,cashier')
+        ->middleware(['subs.check', 'checkRole:owner,admin,cashier'])
         ->group(function (){
             # View semua product
             Route::get('/', [ProductController::class, 'index'])
@@ -54,14 +54,14 @@ Route::middleware(['jwt.verify'])->group(function () {
         });
 
     Route::prefix('products')
-        ->middleware(['checkRole:owner,admin'])
+        ->middleware(['subs.check', 'checkRole:owner,admin'])
         ->group(function () {
             # Create new product
             Route::post('/', [ProductController::class, 'store'])
                 ->middleware('checkPermission')
                 ->name('product.create');
 
-             /** CREATE PRODUCT VARIANT */
+            /** CREATE PRODUCT VARIANT */
             # Create new variant product
             Route::post('/{product}/variants', [ProductVariantController::class, 'store'])
                 ->middleware('checkPermission')
@@ -125,7 +125,7 @@ Route::middleware(['jwt.verify'])->group(function () {
 
     /** STOCK OVERVIEW */
     Route::prefix('variants')
-        ->middleware(['checkRole:owner,admin'])
+        ->middleware(['subs.check', 'checkRole:owner,admin'])
         ->group(function () {
             Route::get('/', [ProductVariantController::class, 'index'])
                 ->middleware('checkPermission')
@@ -141,7 +141,7 @@ Route::middleware(['jwt.verify'])->group(function () {
         });
 
     Route::GET('/inventories/summary', [InventoryItemController::class, 'summary'])
-        ->middleware(['checkRole:owner,admin', 'checkPermission'])
+        ->middleware(['subs.check', 'checkRole:owner,admin', 'checkPermission'])
         ->name('inventory.view');
 });
 

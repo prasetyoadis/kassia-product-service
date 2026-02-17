@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Product;
 
 use App\Http\Requests\BaseApiFormRequest;
+use Illuminate\Validation\Rule;
 // use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateProductRequest extends BaseApiFormRequest
@@ -23,7 +24,14 @@ class UpdateProductRequest extends BaseApiFormRequest
     public function rules(): array
     {
         return [
-            'name' => 'sometimes|string',
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('products', 'name')
+                    ->where('outlet_id', $this->outlet_id)
+                    ->ignore($this->route('product'))
+            ],
             'description' => 'sometimes|nullable|string',
             'categories' => 'sometimes|array|min:1',
             'categories.*' => 'string|exists:categories,id',

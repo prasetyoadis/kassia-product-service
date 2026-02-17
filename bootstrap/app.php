@@ -3,8 +3,7 @@
 use App\Helpers\GeneralResponse;
 use App\Http\Middleware\checkPermission;
 use App\Http\Middleware\checkRole;
-use App\Http\Middleware\validSubs;
-use App\Http\Middleware\validSubsctiption;
+use App\Http\Middleware\ValidSubscription;
 use App\Http\Middleware\VerifyJwtToken;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -29,7 +28,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'checkRole' => checkRole::class,
             'checkPermission' => checkPermission::class,
             'jwt.verify' => VerifyJwtToken::class,
-            'valid.subscription' => validSubs::class,
+            'subs.check' => ValidSubscription::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

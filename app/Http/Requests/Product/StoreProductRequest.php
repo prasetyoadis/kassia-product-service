@@ -55,18 +55,27 @@ class StoreProductRequest extends BaseApiFormRequest
                 'max:255',
                 Rule::unique('products', 'name')
                     ->where('outlet_id', $this->outlet_id)
-                    ->ignore($this->route('product'))
             ],
             'description' => 'nullable|string',
-            'sku' => 'sometimes|nullable|string|max:26|unique:product_variants,sku',
-            'harga_awal' => 'sometimes|nullable|numeric|min:0',
+            'sku' => [
+                Rule::requiredIf(fn() => $this->boolean('is_variant') === false),
+                'string',
+                'max:26',
+                Rule::unique('product_variants', 'sku')
+                    ->where('outlet_id', $this->outlet_id)
+            ],
+            'harga_awal' => [
+                Rule::requiredIf(fn() => $this->boolean('is_variant') === false),
+                'nullable',
+                'numeric',
+                'min:0'
+            ],
             'is_variant' => 'required|boolean',
             
             'categories' => 'required|array|min:1',
             'categories.*' => 'string|exists:categories,id',
             
-            // 'images' => 'required|array',
-            // 'images.*.file' => 'required|image|mimes:jpg,jpeg,png,webp|max:2048',
+            // 'image' => 'required|image|mimes:jpg,jpeg,png,webp|max:2048',
             
             // 'variants' => 'required_if:is_variant,true|array',
             // 'variants.*.sku' => 'required_if:is_variant,true|string|max:26|unique:product_variants,sku',
