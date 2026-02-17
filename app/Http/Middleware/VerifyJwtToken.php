@@ -4,7 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Helpers\GeneralResponse;
 use Closure;
-use Exception;
+// use Exception;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Tymon\JWTAuth\Facades\JWTAuth;
@@ -23,7 +23,7 @@ class VerifyJwtToken
                 $request->bearerToken()
             )->getPayload();
 
-            // inject payload ke request
+            # inject payload ke request
             $request->attributes->set('jwt_payload', $payload);
 
         } catch (\Tymon\JWTAuth\Exceptions\TokenInvalidException $e) {

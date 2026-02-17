@@ -4,9 +4,9 @@ namespace App\Http\Requests\Product;
 
 use App\Helpers\GeneralResponse;
 use App\Http\Requests\BaseApiFormRequest;
-use Illuminate\Foundation\Http\FormRequest;
+// use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
-use Illuminate\Contracts\Validation\Validator;
+// use Illuminate\Contracts\Validation\Validator;
 
 class IndexProductRequest extends BaseApiFormRequest
 {

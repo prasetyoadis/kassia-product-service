@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('product_variants', function (Blueprint $table) {
             $table->ulid('id')->primary();
+            $table->foreignUlid('outlet_id');
             $table->foreignUlid('product_id')->references('id')->on('products');
             $table->string('sku');
             $table->string('variant_name');
@@ -21,6 +22,8 @@ return new class extends Migration
             $table->boolean('is_active')->default(true);
             $table->softDeletes();
             $table->timestamps();
+
+            $table->unique(['outlet_id', 'sku']);
         });
     }
 

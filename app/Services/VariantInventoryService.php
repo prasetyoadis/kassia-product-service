@@ -4,12 +4,12 @@ namespace App\Services;
 
 use App\Models\InventoryItem;
 use App\Models\InventoryLog;
-use App\Models\Product;
-use App\Models\ProductVariant;
+// use App\Models\Product;
+// use App\Models\ProductVariant;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
+// use Illuminate\Support\Str;
 use Throwable;
 
 class VariantInventoryService {
@@ -19,7 +19,7 @@ class VariantInventoryService {
         DB::beginTransaction();
 
         try {
-            $outletId = Cache::get("active_outlet:user:{$userId}") ?? env('TEST_ACTIVE_OUTLET');
+            $outletId = Cache::get("active_outlet:user:{$userId}");
 
             if (!$outletId) {
                 throw new \RuntimeException('Active outlet not found');
@@ -55,13 +55,14 @@ class VariantInventoryService {
                 'outlet_id' => $outletId,
                 'created_by' => $userId,
                 'quantity' => $qty,
+                'total' => $inventory->current_stock,
                 'type' => $payload['type'],
                 'note' => $payload['note'] ?? null,
             ]);
 
             DB::commit();
 
-            Log::info('kassia-product-service.InventoryItemController@updateStock.VariantInventoryService.updateStock success', [
+            Log::info('kassia-product-service.InventoryItemController@updateStock VariantInventoryService@updateStock success', [
                 'service' => 'VariantInventoryService',
                 'action' => 'updateStock',
                 'product_id' => $productId,
@@ -76,7 +77,7 @@ class VariantInventoryService {
         } catch (\Throwable $e) {
             DB::rollBack();
 
-            Log::error('kassia-product-service.InventoryItemController@updateStock.VariantInventoryService.updateStock failed', [
+            Log::error('kassia-product-service.InventoryItemController@updateStock VariantInventoryService@updateStock failed', [
                 'service' => 'VariantInventoryService',
                 'action' => 'updateStock',
                 'product_id' => $productId,
@@ -94,7 +95,7 @@ class VariantInventoryService {
         DB::beginTransaction();
 
         try {
-            $outletId = Cache::get("active_outlet:user:{$userId}") ?? env('TEST_ACTIVE_OUTLET');
+            $outletId = Cache::get("active_outlet:user:{$userId}");
 
             $inventory = InventoryItem::where('product_variant_id', $variantId)
                 ->where('outlet_id', $outletId)
@@ -118,20 +119,21 @@ class VariantInventoryService {
                 'outlet_id' => $outletId,
                 'created_by' => $userId,
                 'quantity' => abs($diff),
+                'total' => $newStock,
                 'type' => 'correction',
                 'note' => $payload['note'] ?? 'Stock correction',
             ]);
 
             DB::commit();
 
-            Log::info('kassia-product-service.InventoryItemController@adjustStock.VariantInventoryService.adjustStock success', [
-                'service'        => 'VariantInventoryService',
-                'action'         => 'adjustStock',
-                'product_id'     => $productId,
-                'variant_id'     => $variantId,
-                'type'           => 'correction',
-                'quantity'       => abs($diff),
-                'current_stock'  => $inventory->current_stock,
+            Log::info('kassia-product-service.InventoryItemController@adjustStock VariantInventoryService@adjustStock success', [
+                'service' => 'VariantInventoryService',
+                'action' => 'adjustStock',
+                'product_id' => $productId,
+                'variant_id' => $variantId,
+                'type' => 'correction',
+                'quantity' => abs($diff),
+                'current_stock' => $inventory->current_stock,
             ]);
 
             return $inventory;
@@ -139,7 +141,7 @@ class VariantInventoryService {
         } catch (\Throwable $e) {
             DB::rollBack();
 
-            Log::error('kassia-product-service.InventoryItemController@adjustStock.VariantInventoryService.adjustStock failed', [
+            Log::error('kassia-product-service.InventoryItemController@adjustStock VariantInventoryService@adjustStock failed', [
                 'service' => 'VariantInventoryService',
                 'action' => 'adjustStock',
                 'product_id' => $productId,
